@@ -7,6 +7,7 @@ class UserRegisterForm(forms.Form):
     username = forms.CharField(widget=forms.TextInput(attrs={'class':'form-control'}))
     email = forms.EmailField(widget=forms.EmailInput(attrs={'class':'form-control'}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class':'form-control'}))
+    confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={'class':'form-control'}))
 
 
     # field validation, prevent from same username or email
@@ -35,3 +36,17 @@ class UserRegisterForm(forms.Form):
             raise ValidationError('the username already exists')
         # is required to return email
         return username
+    
+
+
+    # validation fields that are related to each other
+    # overrideing the clean method
+
+    def clean(self):
+        cd = super().clean()
+        p1 = cd.get('password')
+        p2 = cd.get('confirm_password')
+        
+        if p1 and p1 and p1 != p2:
+            # validation on over form not specific fields
+            raise ValidationError('passwords must match')
