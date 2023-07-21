@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
+from home.models import Post
 
 
 class UserRegisterView(View):
@@ -81,5 +82,11 @@ class UserLogoutView(LoginRequiredMixin ,View):
 class UserProfileView(LoginRequiredMixin, View):
     def get(self, request, user_id): # user_id name must be same name as in path arg
         user = User.objects.get(pk=user_id)
-        
-        return render(request, 'account/profile.html', {'user':user})
+        # filter VS get
+        # 1 filter need for loop
+        # filter retrun many item
+        # if get cant found raise error
+
+        # for foreinKey we need Instance(user), id or pk not working here
+        posts = Post.objects.filter(user=user)
+        return render(request, 'account/profile.html', {'user':user, 'posts': posts})
