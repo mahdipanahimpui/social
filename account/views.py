@@ -4,6 +4,7 @@ from .forms import UserRegisterForm, UserLoginForm
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 class UserRegisterView(View):
@@ -65,7 +66,12 @@ class UserLoginView(View):
         return render(request, self.template_name, {'form':form})
 
             
-class UserLogoutView(View):
+class UserLogoutView(LoginRequiredMixin ,View):
+    # for LoginRequiredMixin add
+    # login_url = '/account/login'
+    # if user is not login redirect to login page
+    # other way is adding LOGING_URL = '/account/login' to setting.py
+
     def get(self, request):
         logout(request)
         messages.success(request, 'user logout', 'success')
