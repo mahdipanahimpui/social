@@ -75,3 +75,11 @@ class UserLogoutView(LoginRequiredMixin ,View):
         logout(request)
         messages.success(request, 'user logout', 'success')
         return redirect('home:home')
+    
+
+
+class UserProfileView(LoginRequiredMixin, View):
+    def get(self, request, user_id): # user_id name must be same name as in path arg
+        user = User.objects.get(pk=user_id)
+        
+        return render(request, 'account/profile.html', {'user':user})
