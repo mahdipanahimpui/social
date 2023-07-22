@@ -6,6 +6,8 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from home.models import Post
+from django.contrib.auth import views as AuthViews
+from django.urls import reverse, reverse_lazy
 
 
 class UserRegisterView(View):
@@ -92,3 +94,18 @@ class UserProfileView(LoginRequiredMixin, View):
         # filter return an empty list if not found anything, but could handled by **get_list_or_404** 
         posts = Post.objects.filter(user=user)
         return render(request, 'account/profile.html', {'user':user, 'posts': posts})
+    
+
+
+
+
+
+class UserPasswordResetView(AuthViews.PasswordResetView):
+    template_name = 'account/password_reset_form.html'
+    success_url = reverse('account:password_reset_home') # because it is class variable, it try to access url, 
+    # but url does not exists yet sor use reverse_lazey
+    # success_url = reverse_lazy('account:password_reset_home')
+    email_template_name = 'account/password_reset_email.html'
+
+
+
