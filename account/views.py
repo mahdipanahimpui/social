@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from .forms import UserRegisterForm, UserLoginForm
 from django.contrib.auth.models import User
@@ -81,12 +81,14 @@ class UserLogoutView(LoginRequiredMixin ,View):
 
 class UserProfileView(LoginRequiredMixin, View):
     def get(self, request, user_id): # user_id name must be same name as in path arg
-        user = User.objects.get(pk=user_id)
+        # user = User.objects.get(pk=user_id)
+        user = get_object_or_404(User, pk=user_id)
         # filter VS get
         # 1 filter need for loop
         # filter retrun many item
         # if get cant found raise error
 
         # for foreinKey we need Instance(user), id or pk not working here
+        # filter return an empty list if not found anything, but could handled by **get_list_or_404** 
         posts = Post.objects.filter(user=user)
         return render(request, 'account/profile.html', {'user':user, 'posts': posts})
