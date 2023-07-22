@@ -5,6 +5,7 @@ from .models import Post
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from .forms import PostUpdateForm
+from django.utils.text import slugify
 
 
 class HomeView(View):
@@ -43,8 +44,18 @@ class PostUpdateView(LoginRequiredMixin, View):
     form_class = PostUpdateForm
     template_name = 'home/update.html'
 
+    # setup handle fields that is shared in methods
+    # why we dont use Class Variable? => class variable run after define
+    # the below setup method optimize the connection to database, (Once)
+    # setup run befor dispatch
+    def setup(self, request, *args, **kwargs):
+        self.post_instance = Post.objects.get(pk=kwargs['post_id'])
+        return super().setup(self, request, *args, **kwargs)
+
+    # dispatch runs befor all methods after that, and prevent repeating codes
     def dispatch(self, request, *args, **kwargs):
-        post = Post.objects.get(pk=kwargs['post_id'])
+        # post = Post.objects.get(pk=kwargs['post_id'])  # setup handles
+        post = self.post_instance
         print(post.user.id)
         print(request.user.id)
 
@@ -55,10 +66,22 @@ class PostUpdateView(LoginRequiredMixin, View):
         # it used as else
         return super().dispatch(request, *args, **kwargs)
 
-    def get(self, request, post_id):
-        post = Post.objects.get(pk=post_id)
+    # insted post_id param use *args, **kwargs
+    def get(self, request, *args, **kwargs):
+        # post = Post.objects.get(pk=post_id) # setup handles
+        post = self.post_instance
         form = self.form_class(instance=post)
         return render(request, self.template_name, {'form':form})
     
-    def post(self, request, post_id):
-        pass
+    # insted post_id param use *args, **kwargs
+    def post(self, request, *args, **kwargs):
+        # post = Post.objects.get(pk=post_id) # setup handles
+        post = self.post_instance
+        form = self.form_class(request.POST, instance=post)
+
+        if form.is_valid():
+            new_post = form.save(commit=False) # save the new post, but not connect to database
+            new_post.slug = slugify(form.cleaned_data['body'][:30])
+            new_post.save()
+            messages.success(request, 'post updated', 'success')
+            return redirect('home:post_detail', post.id, post.slug)
