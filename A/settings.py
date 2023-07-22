@@ -23,9 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-zw=lk)37f+minugaghb2vj&%!lm%gh%_16j5aqvvhdr&(b@4yg'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+# make False to show 404 page
+DEBUG = True
+
+# add host to show 404 page
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -131,3 +134,14 @@ AUTHENTICATION_BACKENDS = [
     'account.authentication.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+
+# Google Account
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'mahdipanahimpui@gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_PASSWORD = 'wpvriljdqspewixp'
+EMAIL_USE_TLS = True # to send email in SECURE PROTOCOL
+# optional
+DEFAULT_FROM_EMAIL = 'from social app'
