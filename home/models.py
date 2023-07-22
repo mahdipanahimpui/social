@@ -22,6 +22,10 @@ class Post(models.Model):
     def __str__(self):
         return f'{self.slug} - by: {self.user}'
     
+    # ordered in all queries
+    class Meta:
+        ordering = ('-created', '-updated', 'body')
+    
 
     def get_absolute_url(self):
         return reverse('home:post_detail', args=[self.id, self.slug])

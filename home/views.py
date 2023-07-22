@@ -13,6 +13,7 @@ class HomeView(View):
 
     def get(self, request): # if user come with GET method
         posts = Post.objects.all()
+        # posts = Post.objects.order_by('-created') # ordered just here but, you can use Meta class in models.py
         
         return render(request, 'home/home.html', {'posts':posts})
         
