@@ -3,6 +3,9 @@
 
 {% block content %}
     <p class="text-center">{{ user.username }}</p>
+    {% if user.id == request.user.id %}
+        <a href="{% url 'home:post_create' %}" class="btn btn-info">Created</a>
+    {% endif %}
     <div class="card">
         {% for post in posts %}
             <a href="{{ post.get_absolute_url }}" class="card-body">{{ post.body|truncatewords:8 }}</a>
