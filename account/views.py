@@ -6,8 +6,8 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from home.models import Post
-from django.contrib.auth import views as AuthViews
-from django.urls import reverse, reverse_lazy
+from django.contrib.auth import views as auth_views
+from django.urls import reverse_lazy
 
 
 class UserRegisterView(View):
@@ -99,13 +99,32 @@ class UserProfileView(LoginRequiredMixin, View):
 
 
 
-
-class UserPasswordResetView(AuthViews.PasswordResetView):
+# sending email 
+# user send email in input field in template_name(password_reset_form.html)
+# an email as email_template_name shape(account/password_reset_email.html) is sent to user by app
+# after sending email to user, success_url('account:password_reset_home') is shown
+class UserPasswordResetView(auth_views.PasswordResetView):
     template_name = 'account/password_reset_form.html'
-    success_url = reverse('account:password_reset_home') # because it is class variable, it try to access url, 
-    # but url does not exists yet sor use reverse_lazey
+    success_url = reverse_lazy('account:password_reset_done') # because it is class variable, it try to access url, 
+    # *** but url does not exists yet sor use reverse_lazey ***
     # success_url = reverse_lazy('account:password_reset_home')
     email_template_name = 'account/password_reset_email.html'
 
 
+## after sending email to user, success_url('account:password_reset_home') is shown by calling below
+# view by UserPasswordResetView
+class UserPasswordResetDoneView(auth_views.PasswordChangeDoneView):
+    template_name = 'account/password_reset_done.html'
 
+
+## showing a page that access to user to change him/his passowrd and confirm it
+# this view need uidb64 and token
+# the url of this view is shown in email context in password_reset_email.html
+class UserPasswordResetConfirmView(auth_views.PasswordResetConfirmView):
+    # an template that use to change password
+    template_name = 'account/password_reset_confirm.html'
+    success_url =  reverse_lazy('account:password_reset_complete')
+
+
+class UserPasswordResetComplete(auth_views.PasswordResetCompleteView):
+    template_name =  'account/password_reset_complete.html'
