@@ -5,8 +5,16 @@
     <p class="text-center">{{ user.username }}</p>
     {% if user.id == request.user.id %}
         <a href="{% url 'home:post_create' %}" class="btn btn-info">Created</a>
+    {% else %}
+        {% if is_following %}
+            <a class="btn btn-danger" href="{% url 'account:user_unfollow' user.id %}">Unfollow</a>
+        {% else %}
+            <a class="btn btn-info" href="{% url 'account:user_follow' user.id %}">Follow</a>
+        {% endif %}
     {% endif %}
+
     <div class="card">
+
         {% for post in posts %}
             <a href="{{ post.get_absolute_url }}" class="card-body">{{ post.body|truncatewords:8 }}</a>
         {% endfor %}

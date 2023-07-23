@@ -10,6 +10,8 @@ urlpatterns = [
     path('reset/', views.UserPasswordResetView.as_view(), name='password_reset'),
     path('reset/done/', views.UserPasswordResetDoneView.as_view(), name='password_reset_done'),
     path('reset/confirm/<uidb64>/<token>', views.UserPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('reset/complete/', views.UserPasswordResetComplete.as_view(), name='password_reset_complete')
+    path('reset/complete/', views.UserPasswordResetComplete.as_view(), name='password_reset_complete'),
+    path('follow/<int:to_user_id>', views.UserFollowView.as_view(), name='user_follow'),
+    path('unfollow/<int:to_user_id>', views.UserUnfollowView.as_view(), name='user_unfollow'),
     
 ]
