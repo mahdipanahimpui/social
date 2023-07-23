@@ -92,7 +92,9 @@ class UserProfileView(LoginRequiredMixin, View):
 
         # for foreinKey we need Instance(user), id or pk not working here
         # filter return an empty list if not found anything, but could handled by **get_list_or_404** 
-        posts = Post.objects.filter(user=user)
+
+        # posts = Post.objects.filter(user=user) # insted this code, use related_name
+        posts = user.user_posts.all()
         return render(request, 'account/profile.html', {'user':user, 'posts': posts})
     
 

@@ -10,7 +10,13 @@ from django.urls import reverse
 
 
 class Post(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE) # a foreinKey to user model, if user deleted, all post shuld be deleted
+    ########## for backward relations #########
+    # u is a User instance
+    # u.Post.all() => ERROR (Note!!: in O2O relation is ok)
+    # solution: add <_set> u.Post_set.all() for M2M & M2O relations
+    # other way: add <related_name> for field, so => u.<related_name> is OK
+    # ** Does not need migration ** for adding related_name
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_posts') # a foreinKey to user model, if user deleted, all post shuld be deleted
     body = models.TextField()
     slug = models.SlugField()
     # auto_now_add, complete the input automaticaly for FIRST time
