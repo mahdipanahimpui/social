@@ -35,3 +35,26 @@ class Post(models.Model):
 
     def get_absolute_url(self):
         return reverse('home:post_detail', args=[self.id, self.slug])
+    
+
+
+
+
+class Comment(models.Model):
+
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name='user_comments')
+    # if Post class is created bellow of Comment class use 'Post' insted Post  (in ForeigKey)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='post_comments')
+    body = models.TextField(max_length=400)
+    # insted 'self' you can use 'Comment'
+    # blank and null allows to make reply null, null=True is on DATABASE, blank=True is Django level and for validation
+    reply = models.ForeignKey('self', on_delete=models.PROTECT ,related_name='rcomment', blank=True, null=True)
+    is_reply = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return f'{self.user} C/R TO {self.body}'
+    
+
+

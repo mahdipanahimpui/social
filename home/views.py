@@ -23,7 +23,8 @@ class PostDetailView(View):
     def get(self, request, post_id, post_slug):
         # post = Post.objects.get(pk=post_id, slug=post_slug)
         post = get_object_or_404(Post, pk=post_id, slug=post_slug)
-        return render(request, self.template_name, {'post':post})
+        comments = post.post_comments.filter(is_reply=False)
+        return render(request, self.template_name, {'post':post, 'comments': comments})
     
 
 
