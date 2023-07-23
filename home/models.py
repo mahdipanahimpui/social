@@ -48,7 +48,7 @@ class Comment(models.Model):
     body = models.TextField(max_length=400)
     # insted 'self' you can use 'Comment'
     # blank and null allows to make reply null, null=True is on DATABASE, blank=True is Django level and for validation
-    reply = models.ForeignKey('self', on_delete=models.PROTECT ,related_name='rcomment', blank=True, null=True)
+    reply = models.ForeignKey('self', on_delete=models.PROTECT ,related_name='rcomments', blank=True, null=True)
     is_reply = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
 

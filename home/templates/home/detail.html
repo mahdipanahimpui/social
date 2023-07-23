@@ -22,6 +22,17 @@
     <div class="card bg-dark text-white" style="margin:10px">
         <p class="card-header">from <a href="{% url 'account:user_profile' comment.user.id %}">{{ comment.user }}</a>  |  {{ comment.created|timesince }} ago</p>
         <p class="card-body">{{ comment.body }}</p>
+
+        <!-- .all is important-->
+        <!-- \{\% for reply in comment.rcomments.all \%\} -->
+        <!-- usign with tag you can create varable -->
+        {% with replies=comment.rcomments.all %}
+        {% for reply in replies %}
+            <p class="bg-primary p-3 m-2">from <a href="{% url 'account:user_profile' comment.user.id %}">{{ comment.user }}</a>  |  {{ comment.created|timesince }} ago</p>
+            <p class="bg-primary p-3 m-2">{{ reply.body }}</p>
+        {% endfor %}
+        {% endwith %}
+
     </div>
     {% empty %}
         <p> No comment yet</p>
