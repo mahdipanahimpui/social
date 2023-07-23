@@ -4,9 +4,12 @@ from django.views import View
 from .models import Post
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from .forms import PostCreateUpdateForm
+from .forms import PostCreateUpdateForm, CommentCreateForm
 from django.utils.text import slugify
-
+from django.urls import reverse
+from django.contrib.auth.decorators import login_required
+# method_decorator is used to apply function decorator(login_required) on methods
+from django.utils.decorators import method_decorator
 
 class HomeView(View):
     template_name = 'home/home.html'
@@ -20,11 +23,50 @@ class HomeView(View):
 
 class PostDetailView(View):
     template_name = 'home/detail.html'
-    def get(self, request, post_id, post_slug):
+    form_class = CommentCreateForm
+
+    def setup(self, request, *args, **kwargs):
+        # not use self.post use self.post_instance, because django think you mention to
+        # Post class
+        self.post_instance = get_object_or_404(Post, pk=kwargs['post_id'], slug=kwargs['post_slug'])
+        return super().setup(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
         # post = Post.objects.get(pk=post_id, slug=post_slug)
-        post = get_object_or_404(Post, pk=post_id, slug=post_slug)
-        comments = post.post_comments.filter(is_reply=False)
-        return render(request, self.template_name, {'post':post, 'comments': comments})
+        
+        comments = self.post_instance.post_comments.filter(is_reply=False)
+        form = self.form_class()
+
+        form_data = request.session.get('form_data')
+
+        if form_data:
+            form = self.form_class(data=form_data)
+            del request.session['form_data']
+
+        return render(request, self.template_name, {'post':self.post_instance, 'comments': comments, 'form': form})
+    
+    @method_decorator(login_required) # i think is not good because <<if not request.user.is_authenticated:>> not working, but session is better 
+    def post(self, request, *args, **kwargs):
+
+        form = self.form_class(request.POST)
+
+        if not request.user.is_authenticated:
+            request.session['form_data'] = request.POST.dict()
+            print(request.session['form_data'])
+            next_url = reverse('account:user_login') + '?next=' + request.path
+            return redirect(next_url)
+        
+        
+        if form.is_valid():
+            new_comment = form.save(commit=False)
+            new_comment.user = request.user
+            new_comment.post = self.post_instance
+            new_comment.save()
+
+
+            messages.success(request, 'comment submitted', 'success')
+            return redirect('home:post_detail', self.post_instance.id, self.post_instance.slug)
+
     
 
 

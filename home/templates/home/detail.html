@@ -11,9 +11,15 @@
     {% endif %}
 
     <br><hr>
+    <form method="post" action="" novalidate>
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input value="Send" type="submit">
+    </form>    
+    <br><hr>
 
     {% for comment in comments %}
-    <div class="card bg-dark text-white">
+    <div class="card bg-dark text-white" style="margin:10px">
         <p class="card-header">from <a href="{% url 'account:user_profile' comment.user.id %}">{{ comment.user }}</a>  |  {{ comment.created|timesince }} ago</p>
         <p class="card-body">{{ comment.body }}</p>
     </div>

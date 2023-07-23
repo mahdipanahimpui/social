@@ -11,6 +11,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 
 
+
 class UserRegisterView(View):
     form_class = UserRegisterForm
     template_name = 'account/register.html'
@@ -73,7 +74,6 @@ class UserLoginView(View):
                 messages.success(request, 'user logged in', 'success')
                 if self.next:
                     return redirect(self.next)
-
                 return redirect('home:home')
         
             messages.error(request, 'username or password is wrong', 'warning')
