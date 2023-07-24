@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.views import View
-from .models import Post
+from .models import Post, Comment
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from .forms import PostCreateUpdateForm, CommentCreateForm
+from .forms import PostCreateUpdateForm, CommentCreateForm, CommentReplyForm
 from django.utils.text import slugify
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
@@ -24,6 +24,7 @@ class HomeView(View):
 class PostDetailView(View):
     template_name = 'home/detail.html'
     form_class = CommentCreateForm
+    reply_form_class = CommentReplyForm
 
     def setup(self, request, *args, **kwargs):
         # not use self.post use self.post_instance, because django think you mention to
@@ -36,22 +37,25 @@ class PostDetailView(View):
         
         comments = self.post_instance.post_comments.filter(is_reply=False)
         form = self.form_class()
+        reply_form = self.reply_form_class()
 
         form_data = request.session.get('form_data')
+        print(form_data)
 
         if form_data:
             form = self.form_class(data=form_data)
             del request.session['form_data']
 
-        return render(request, self.template_name, {'post':self.post_instance, 'comments': comments, 'form': form})
+        return render(request, self.template_name, {'post':self.post_instance, 'comments': comments, 'form': form, 'reply_form': reply_form})
     
-    @method_decorator(login_required) # i think is not good because <<if not request.user.is_authenticated:>> not working, but session is better 
+    # @method_decorator(login_required) # i think is not good because <<if not request.user.is_authenticated:>> not working, but session is better 
     def post(self, request, *args, **kwargs):
 
         form = self.form_class(request.POST)
 
         if not request.user.is_authenticated:
             request.session['form_data'] = request.POST.dict()
+            
             print(request.session['form_data'])
             next_url = reverse('account:user_login') + '?next=' + request.path
             return redirect(next_url)
@@ -152,3 +156,31 @@ class PostCreateView(LoginRequiredMixin, View):
         return redirect('home:post_detail', new_post.id, new_post.slug) 
 
 
+
+
+class PostAddReplyView(LoginRequiredMixin, View):
+    from_class = CommentReplyForm
+
+    def setup(self, request, *args, **kwargs):
+        self.post_instance = get_object_or_404(Post, pk=kwargs['post_id'])
+        return super().setup(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        return redirect('home:post_detail', self.post_instance.id, self.post_instance.slug)
+
+
+    def post(self, request, post_id, comment_id):
+        post = self.post_instance
+        comment = get_object_or_404(Comment, pk=comment_id)
+        form = self.from_class(request.POST)
+        if form.is_valid():
+            reply = form.save(commit=False)
+            reply.user = request.user
+            reply.reply = comment
+            reply.post = post
+            reply.is_reply = True
+            reply.save()
+            messages.success(request, 'replied Ok', 'success')
+            print('#'*89)
+            print(reply.created)
+        return redirect('home:post_detail', post.id, post.slug)
