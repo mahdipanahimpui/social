@@ -4,7 +4,7 @@ from django.views import View
 from .models import Post, Comment, Like
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from .forms import PostCreateUpdateForm, CommentCreateForm, CommentReplyForm
+from .forms import PostCreateUpdateForm, CommentCreateForm, CommentReplyForm, PostSearchForm
 from django.utils.text import slugify
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
@@ -13,12 +13,24 @@ from django.utils.decorators import method_decorator
 
 class HomeView(View):
     template_name = 'home/home.html'
+    form_class = PostSearchForm
 
     def get(self, request): # if user come with GET method
         posts = Post.objects.all()
+        posts_count = None
         # posts = Post.objects.order_by('-created') # ordered just here but, you can use Meta class in models.py
-        
-        return render(request, 'home/home.html', {'posts':posts})
+
+        # a query with search key
+        if request.GET.get('search'):
+            # using field lookup to search
+            print('searching ...')
+            posts = posts.filter(body__icontains=request.GET['search'])
+            posts_count = posts.count()
+            print(posts_count)
+
+
+        # Does not need to create an instancd from form, JUST SEND IT
+        return render(request, 'home/home.html', {'posts':posts, 'form': self.form_class, 'posts_count': posts_count})
         
 
 class PostDetailView(View):

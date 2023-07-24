@@ -1,6 +1,17 @@
 {% extends 'base.html' %}
 
 {% block content %}
+    <!-- because searching is not secure action, you can use GET insted of POST, -->
+    <!-- for GET csrf_token is no required -->
+    <form action="" method="get" style="margin:10px">
+        {{ form }}
+        <input type="submit" value="serach" >
+    </form>
+
+    {% if posts_count is not None %}
+        <p>{{ posts_count }} post{{ posts_count|pluralize }} find</p>
+    {% endif %}
+
     <div class="card">
         {% for post in posts %}
             <a href="{{ post.get_absolute_url }}" class="card-body">{{ post.body|truncatewords:8 }}</a>
