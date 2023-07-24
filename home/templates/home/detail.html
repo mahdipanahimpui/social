@@ -11,6 +11,14 @@
     {% endif %}
 
     <br><hr>
+    {% if post.user.id != request.user.id %}
+        {% if can_like %}
+            <a class="btn btn-primary m-d-2" href="{% url 'home:post_like' post.id %}">Like {{ post.likes_count }}</a>
+        {% else %}
+            <a class="btn btn-danger m-d-2" href="{% url 'home:post_unlike' post.id %}">UnLike {{ post.likes_count }}</a>
+        {% endif %}
+    {% endif %}
+    <br>
     <form method="post" action="" novalidate>
         {% csrf_token %}
         {{ form.as_p }}

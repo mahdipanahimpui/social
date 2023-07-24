@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.views import View
-from .models import Post, Comment
+from .models import Post, Comment, Like
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from .forms import PostCreateUpdateForm, CommentCreateForm, CommentReplyForm
@@ -34,6 +34,10 @@ class PostDetailView(View):
 
     def get(self, request, *args, **kwargs):
         # post = Post.objects.get(pk=post_id, slug=post_slug)
+
+        can_like = False
+        if request.user.is_authenticated and self.post_instance.user_can_like(request.user):
+            can_like = True
         
         comments = self.post_instance.post_comments.filter(is_reply=False)
         form = self.form_class()
@@ -46,7 +50,7 @@ class PostDetailView(View):
             form = self.form_class(data=form_data)
             del request.session['form_data']
 
-        return render(request, self.template_name, {'post':self.post_instance, 'comments': comments, 'form': form, 'reply_form': reply_form})
+        return render(request, self.template_name, {'post':self.post_instance, 'comments': comments, 'form': form, 'reply_form': reply_form, 'can_like': can_like})
     
     # @method_decorator(login_required) # i think is not good because <<if not request.user.is_authenticated:>> not working, but session is better 
     def post(self, request, *args, **kwargs):
@@ -183,4 +187,39 @@ class PostAddReplyView(LoginRequiredMixin, View):
             messages.success(request, 'replied Ok', 'success')
             print('#'*89)
             print(reply.created)
+        return redirect('home:post_detail', post.id, post.slug)
+    
+
+
+
+
+class PostLikeView(LoginRequiredMixin, View):
+
+    def get(self, request, *args, **kwargs):
+        post = get_object_or_404(Post, id=kwargs['post_id'])
+        if request.user == post.user:
+            messages.error(request, 'You cannot like your own post.', 'danger')
+        else:
+            like, created = Like.objects.get_or_create(post=post, user=request.user)
+            if created:
+                messages.success(request, 'You liked this post.', 'success')
+            else:
+                messages.error(request, 'You have already liked this post.', 'danger')
+        return redirect('home:post_detail', post.id, post.slug)
+    
+
+
+class PostUnlikeView(LoginRequiredMixin, View):
+
+    def get(self, request, *args, **kwargs):
+        post = get_object_or_404(Post, id=kwargs['post_id'])
+        if request.user == post.user:
+            messages.error(request, 'You cannot like your own post.', 'danger')
+        else:
+            like = get_object_or_404(Like, post=post, user=request.user) # .exists() just work in filter on ing get
+            if like:
+                like.delete()
+                messages.success(request, 'You unliked this post.', 'success')
+            else:
+                messages.error(request, 'you are not liking this post', 'danger')
         return redirect('home:post_detail', post.id, post.slug)

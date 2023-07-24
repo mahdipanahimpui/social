@@ -36,6 +36,17 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse('home:post_detail', args=[self.id, self.slug])
     
+    def likes_count(self):
+        return self.plikes.count()
+    
+
+    def user_can_like(self, user):
+        user_like = user.ulikes.filter(post=self)
+        if user_like.exists():
+            return False
+        return True
+
+    
 
 
 
@@ -48,7 +59,7 @@ class Comment(models.Model):
     body = models.TextField(max_length=400)
     # insted 'self' you can use 'Comment'
     # blank and null allows to make reply null, null=True is on DATABASE, blank=True is Django level and for validation
-    reply = models.ForeignKey('self', on_delete=models.PROTECT ,related_name='rcomments', blank=True, null=True)
+    reply = models.ForeignKey('self', on_delete=models.CASCADE ,related_name='rcomments', blank=True, null=True)
     is_reply = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
 
@@ -56,5 +67,16 @@ class Comment(models.Model):
     def __str__(self):
         return f'{self.user} C/R TO {self.body}'
     
+
+
+class Like(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ulikes')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="plikes")
+    
+
+    def __str__(self):
+        return f'{self.user} liked {self.post.slug}'
+    
+
 
 
