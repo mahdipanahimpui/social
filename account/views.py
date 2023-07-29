@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
-from .forms import UserRegisterForm, UserLoginForm
+from .forms import UserRegisterForm, UserLoginForm, EditUserForm
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -9,6 +9,8 @@ from home.models import Post
 from account.models import Relation
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
+# from django.core.exceptions import 
+
 
 
 
@@ -200,3 +202,33 @@ class UserUnfollowView(LoginRequiredMixin, View):
 
         return redirect('account:user_profile', user_id=to_user_id)
 
+
+
+class EditUserView(View):
+    form_class = EditUserForm
+    template_name = 'account/edit_profile.html'
+
+    # def setup(self, request, *args, **kwargs):
+    #     try: 
+    #         self.instance = request.user.profile
+    #     except Exception:
+    #         self.instance.bio = 
+    #     return super().setup(request, *args, **kwargs)
+
+    def get(self, request):
+        form = self.form_class(instance=request.user.profile, initial={'email': request.user.email})
+        # form = self.form_class(instance=request.user.profile ,initial={
+        #     'email': request.user.email,
+        # })
+        return render(request, self.template_name, {'form': form})
+    
+    def post(self, request):
+        form = self.form_class(request.POST, instance=request.user.profile)
+        if form.is_valid():
+            form.save()
+            request.user.email = form.cleaned_data['email']
+            request.user.save() # save is required
+            messages.success(request, 'profile Edited', 'success')
+
+        return redirect('account:user_profile', request.user.id)
+        

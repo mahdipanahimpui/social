@@ -3,8 +3,13 @@
 
 {% block content %}
     <p class="text-center">{{ user.username }}</p>
+    <p>age: {{ user.profile.age }}</p>
+    <small>bio: {{ user.profile.bio }}</small>
+    <br>
+    <hr>
     {% if user.id == request.user.id %}
         <a href="{% url 'home:post_create' %}" class="btn btn-info">Created</a>
+        <a href="{% url 'account:edit_user' %}" class="btn btn-primary">Edit Profile</a>
     {% else %}
         {% if is_following %}
             <a class="btn btn-danger" href="{% url 'account:user_unfollow' user.id %}">Unfollow</a>
@@ -12,6 +17,7 @@
             <a class="btn btn-info" href="{% url 'account:user_follow' user.id %}">Follow</a>
         {% endif %}
     {% endif %}
+
 
     <div class="card">
 
