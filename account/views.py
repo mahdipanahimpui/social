@@ -9,8 +9,7 @@ from home.models import Post
 from account.models import Relation
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
-# from django.core.exceptions import 
-
+# from .models import Profile
 
 
 
@@ -34,7 +33,10 @@ class UserRegisterView(View):
 
         if form.is_valid():
             cd = form.cleaned_data
-            User.objects.create_user(cd['username'], cd['email'], cd['password'])
+            user = User.objects.create_user(cd['username'], cd['email'], cd['password'])
+            # WARNING!!!
+            # Profile.objects.create(user=user) # it is not working if you want create user by shell or in other way
+            # USE SIGNALS
             messages.success(request, 'User Registered', 'success')
             return redirect('home:home')
         
@@ -208,18 +210,10 @@ class EditUserView(View):
     form_class = EditUserForm
     template_name = 'account/edit_profile.html'
 
-    # def setup(self, request, *args, **kwargs):
-    #     try: 
-    #         self.instance = request.user.profile
-    #     except Exception:
-    #         self.instance.bio = 
-    #     return super().setup(request, *args, **kwargs)
 
     def get(self, request):
         form = self.form_class(instance=request.user.profile, initial={'email': request.user.email})
-        # form = self.form_class(instance=request.user.profile ,initial={
-        #     'email': request.user.email,
-        # })
+
         return render(request, self.template_name, {'form': form})
     
     def post(self, request):
